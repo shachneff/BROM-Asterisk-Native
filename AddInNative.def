@@ -1,0 +1,7 @@
+LIBRARY    "TCPClient.dll"
+
+EXPORTS
+GetClassObject
+DestroyObject
+GetClassNames
+SetPlatformCapabilities
