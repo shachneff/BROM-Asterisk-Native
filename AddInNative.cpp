@@ -16,7 +16,8 @@ static const wchar_t *g_PropNames[] = { L"Connected",
 										L"Filter",
 										L"RegEx",
 										L"Version",
-										L"ErrorAsEvent"
+										L"ErrorAsEvent",
+										L"Port"
 };
 
 static const wchar_t *g_PropNamesRu[] = {	L"Подключено",
@@ -24,7 +25,8 @@ static const wchar_t *g_PropNamesRu[] = {	L"Подключено",
 											L"Фильтр",
 											L"РегулярноеВыражение",
 											L"Версия",
-											L"ОшибкаКакСобытие"
+											L"ОшибкаКакСобытие",
+											L"Порт"
 };
 
 
@@ -183,8 +185,10 @@ bool CAddInNative::Init(void* pConnection)
 	Socket = 0;
 	hTh = 0;
 	errorAsEvent = 0;
+	port = 5038;
 	filter = L"";
-	regEx = 0;
+	regEx = L"";
+
 
 	// Initialise Winsock
 	WSADATA WsaDat;
@@ -351,7 +355,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	
 	case ePropVersion:
 
-		temp = L"1.0.0";
+		temp = L"1.2.0.1"; // последняя бесплатная версия предшественнка закончилась на 1.1.0.7
 		tempSize = ::wcslen(temp);
 
 		if (m_iMemory)
@@ -368,6 +372,11 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	case ePropErrorAsEvent:
 		TV_VT(pvarPropVal) = VTYPE_I4;
 		TV_I4(pvarPropVal) = errorAsEvent;
+		break;
+
+	case ePropPort:
+		TV_VT(pvarPropVal) = VTYPE_I4;
+		TV_I4(pvarPropVal) = port;
 		break;
 
 	default:
@@ -880,7 +889,7 @@ wchar_t* CAddInNative::getName()
 
 
 // библиотека WINSOCK традиционно возвращает 0 (ноль) если выполнение функции успешно
-bool CAddInNative::Connect(wchar_t* server, int port)
+bool CAddInNative::Connect(wchar_t* server, int lport)
 {
 
 	if (connected == 1)
@@ -910,7 +919,7 @@ bool CAddInNative::Connect(wchar_t* server, int port)
 	ZeroMemory(&srvAddr, sizeof(srvAddr));
 
 	srvAddr.sin_family = AF_INET;
-	srvAddr.sin_port = htons(port);
+	srvAddr.sin_port = htons(lport);
 	
 	LPSTR str = WCHAR_2_CHAR(server);
 
@@ -964,6 +973,7 @@ bool CAddInNative::Connect(wchar_t* server, int port)
 
 
 	connected = 1;
+	port = lport;
 	
 	SendEvent(L"Connected", server);
 		

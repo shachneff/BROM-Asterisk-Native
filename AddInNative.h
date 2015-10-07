@@ -24,6 +24,7 @@ public:
 		ePropRegEx,
 		ePropVersion,
 		ePropErrorAsEvent,
+		ePropPort,
 		ePropLast      // Always last
 	};
 
@@ -118,6 +119,8 @@ private:
 	int errorAsEvent;
 	wchar_t* filter;
 	wchar_t* regEx;
+
+	int port;
 
 	
 	
