@@ -1,4 +1,4 @@
-LIBRARY    "TCPClient.dll"
+LIBRARY    "BROM-Asterisk-Native.dll"
 
 EXPORTS
 GetClassObject
