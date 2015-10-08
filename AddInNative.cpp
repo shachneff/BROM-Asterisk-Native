@@ -21,7 +21,7 @@ static const wchar_t *g_PropNames[] = { L"Connected",
 };
 
 static const wchar_t *g_PropNamesRu[] = {	L"Подключено",
-											L"РежимПрослушивания ",
+											L"РежимПрослушивания",
 											L"Фильтр",
 											L"РегулярноеВыражение",
 											L"Версия",
@@ -231,7 +231,7 @@ void CAddInNative::Done()
 //---------------------------------------------------------------------------//
 bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
-	const wchar_t* wsExtension = L"BROM-Asterisk-Native";
+	const wchar_t* wsExtension = L"ROM-Asterisk-Native";
 	int iActualSize = ::wcslen(wsExtension) + 1;
 	WCHAR_T* dest = 0;
 
@@ -355,7 +355,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	
 	case ePropVersion:
 
-		temp = L"1.2.0.1"; // последняя бесплатная версия предшественнка закончилась на 1.1.0.7
+		temp = L"1.2.0.2"; // последняя бесплатная версия предшественнка закончилась на 1.1.0.7
 		tempSize = ::wcslen(temp);
 
 		if (m_iMemory)
@@ -599,7 +599,11 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 
 			int Port = TV_I4(paParams + 1);
 
-			return Connect(Server, Port);
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = Connect(Server, Port);
+
+			return true;
+			
 		}
 
 		case eMethDisconnect:
@@ -607,7 +611,11 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 			if (lSizeArray || paParams)
 				return false; // если есть параметры то ошибка
 			
-			return Disconnect();
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = Disconnect();
+
+			return true;
+			
 		}
 		
 		case eMethSendCommand:
@@ -621,7 +629,10 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 			wchar_t* msg = 0;
 			::convFromShortWchar(&msg, TV_WSTR(paParams));
 
-			return SendCommand(msg);
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = SendCommand(msg);
+
+			return true;
 		}
 
 
@@ -633,7 +644,12 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 			if (TV_VT(paParams) != VTYPE_I4) // проверяем тип первого параметра
 				return false;
 		
-			return ListenMode(TV_I4(paParams));
+
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = ListenMode(TV_I4(paParams));
+
+			return true;
+			
 		}
 
 		case eMethSetFilter:
@@ -647,7 +663,12 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 			wchar_t* filter = 0;
 			::convFromShortWchar(&filter, TV_WSTR(paParams));
 
-			return setFilter(filter);
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = setFilter(filter);
+
+			return true;
+
+			
 		}
 
 		case eMethSetRegEx:
@@ -661,7 +682,12 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 			wchar_t* regEx = 0;
 			::convFromShortWchar(&regEx, TV_WSTR(paParams));
 
-			return setRegEx(regEx);
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = setRegEx(regEx);
+
+			return true;
+
+			
 		}
 
 		case eMethSetBufferDepth:
@@ -674,7 +700,13 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 
 			int depth = TV_I4(paParams);
 
-			return setBufferDepth(depth);
+
+			TV_VT(pvarRetValue) = VTYPE_I4;
+			TV_I4(pvarRetValue) = setBufferDepth(depth);
+
+			return true;
+
+			
 		}
 
 
@@ -687,15 +719,15 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 	return false;
 }
 
-bool CAddInNative::setBufferDepth(int depth)
+int CAddInNative::setBufferDepth(int depth)
 {
 
 	if (m_iConnect)
 		m_iConnect->SetEventBufferDepth(depth);
 	else
-		return false;
+		return 0;
 
-	return true;
+	return 1;
 
 
 }
@@ -882,14 +914,14 @@ bool CAddInNative::SendEvent(wchar_t* msg, wchar_t* Data)
 
 wchar_t* CAddInNative::getName()
 {
-	const wchar_t* wsExtension = L"BROM-Asterisk"; // то как нас опознает код внешнего события 1С
+	const wchar_t* wsExtension = L"ROM-Asterisk-Native"; // то как нас опознает код внешнего события 1С
 	return (wchar_t*)wsExtension;
 }
 
 
 
 // библиотека WINSOCK традиционно возвращает 0 (ноль) если выполнение функции успешно
-bool CAddInNative::Connect(wchar_t* server, int lport)
+int CAddInNative::Connect(wchar_t* server, int lport)
 {
 
 	if (connected == 1)
@@ -906,7 +938,7 @@ bool CAddInNative::Connect(wchar_t* server, int lport)
 		//AddError
 		WSACleanup();
 		
-		return false;
+		return 0;
 	}
 
 	
@@ -937,7 +969,7 @@ bool CAddInNative::Connect(wchar_t* server, int lport)
 			DWORD dwErr = WSAGetLastError();
 
 			OnError(dwErr, getErrorDescription(dwErr)); 
-			return false;
+			return 0;
 		}
 	}
 
@@ -951,7 +983,7 @@ bool CAddInNative::Connect(wchar_t* server, int lport)
 		closesocket(Socket);
 		WSACleanup();
 
-		return false;
+		return 0;
 	}
 	
 	// перевели в неблокирующий режим
@@ -967,7 +999,7 @@ bool CAddInNative::Connect(wchar_t* server, int lport)
 		//AddError
 		WSACleanup();
 
-		return false;
+		return 0;
 
 	}
 
@@ -978,18 +1010,18 @@ bool CAddInNative::Connect(wchar_t* server, int lport)
 	SendEvent(L"Connected", server);
 		
 
-	return true; // все ОК
+	return 1; // все ОК
 }
 
-bool CAddInNative::Disconnect()
+int CAddInNative::Disconnect()
 {
 	if (connected == 0)
-		return true;
+		return 1;
 
 	EnterCriticalSection(&cs);
 	
 	if (connected == 0)
-		return true;
+		return 1;
 	
 	connected = 0;
 
@@ -997,7 +1029,7 @@ bool CAddInNative::Disconnect()
 	wchar_t str[256];
 
 	int res = 0;
-	bool bRes = true;
+	bool bRes = 1;
 
 	try {
 		res = shutdown(Socket, 2);
@@ -1013,12 +1045,12 @@ bool CAddInNative::Disconnect()
 		if (res == SOCKET_ERROR)
 		{
 			OnError();
-			bRes = false;
+			bRes = 0;
 			//SendErrorEvent(str);
 		}
 	}
 	catch (...) {
-		res = false;
+		bRes = 0;
 	};
 
 	
@@ -1034,7 +1066,7 @@ bool CAddInNative::Disconnect()
 	return bRes;
 }
 
-bool CAddInNative::ListenMode(int flag)
+int CAddInNative::ListenMode(int flag)
 {
 	if (flag == 1)
 	{
@@ -1047,7 +1079,7 @@ bool CAddInNative::ListenMode(int flag)
 		hTh = (HANDLE)_beginthreadex(NULL, 10, RecvInThread, (LPVOID)this, 0, &thID);
 
 		if (hTh == 0)
-			return false;
+			return 0;
 	} 
 	else
 	{
@@ -1058,15 +1090,15 @@ bool CAddInNative::ListenMode(int flag)
 			DWORD stopThRes = WaitForSingleObject(hTh, INFINITE);
 			hTh = 0;
 			if (stopThRes != WAIT_OBJECT_0)
-				return false;
+				return 0;
 		}
 
 	}
 	
-	return true;
+	return 1;
 }
 
-bool CAddInNative::SendCommand(wchar_t* msg)
+int CAddInNative::SendCommand(wchar_t* msg)
 {
 	
 	int sendCount = 0;
@@ -1074,7 +1106,7 @@ bool CAddInNative::SendCommand(wchar_t* msg)
 	if (connected == 0)
 	{
 		//OnError(L"Send",0,L"No connection");
-		return false;
+		return 0;
 	}
 	else
 	{
@@ -1087,30 +1119,30 @@ bool CAddInNative::SendCommand(wchar_t* msg)
 			
 			OnError();
 			OnDisconnect();
-			return false;
+			return 0;
 		}
 
-		return true;
+		return 1;
 	}
 
 }
 
 
-bool CAddInNative::setFilter(wchar_t* str_filter)
+int CAddInNative::setFilter(wchar_t* str_filter)
 {
 
 	filter = str_filter;
-	return true;
+	return 1;
 }
 
-bool CAddInNative::setRegEx(wchar_t* str_regex)
+int CAddInNative::setRegEx(wchar_t* str_regex)
 {
 	
 	regEx = str_regex;
 	if (wcslen(str_regex) == 0)
 		regEx = 0;
 	
-	return true;
+	return 1;
 
 }
 

@@ -1,4 +1,4 @@
-LIBRARY    "BROM-Asterisk-Native.dll"
+LIBRARY    "ROM-Asterisk-Native.dll"
 
 EXPORTS
 GetClassObject

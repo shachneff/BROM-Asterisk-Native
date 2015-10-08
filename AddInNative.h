@@ -101,15 +101,15 @@ private:
 	IMemoryManager     *m_iMemory;
 	
 	
-	bool Connect(wchar_t*, int);
-	bool Disconnect();
+	int Connect(wchar_t*, int);
+	int Disconnect();
 	
 	
-	bool SendCommand(wchar_t*);
-	bool ListenMode(int);
-	bool setFilter(wchar_t*);
-	bool setRegEx(wchar_t*);
-	bool setBufferDepth(int);
+	int SendCommand(wchar_t*);
+	int ListenMode(int);
+	int setFilter(wchar_t*);
+	int setRegEx(wchar_t*);
+	int setBufferDepth(int);
 
 	char* WCHAR_2_CHAR(wchar_t *txt);
 	wchar_t* getErrorDescription(DWORD dwErr);
