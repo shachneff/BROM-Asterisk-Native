@@ -93,7 +93,7 @@ public:
 
 	
 private:
-	wchar_t* wsName = L"InnovaIT-Asterisk-Native";
+	wchar_t* wsName = L"ROM-Asterisk-Native";
 
 	long findName(const wchar_t* names[], const wchar_t* name, const uint32_t size) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
