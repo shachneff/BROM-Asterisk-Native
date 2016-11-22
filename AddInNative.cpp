@@ -13,7 +13,6 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-// -------------------------------------------------------Innova-it
 static const wchar_t *g_PropNames[] = { L"Connected",
 L"Listen",
 L"RegEx",
@@ -249,7 +248,7 @@ void CAddInNative::Done()
 //---------------------------------------------------------------------------//
 bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
-	const wchar_t* wsExtension = L"InnovaIT-Asterisk-Native";
+	const wchar_t* wsExtension = L"ROM-Asterisk-Native";
 	int iActualSize = ::wcslen(wsExtension) + 1;
 	WCHAR_T* dest = 0;
 
@@ -444,15 +443,6 @@ bool CAddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
 		wchar_t* t_key = 0;
 		convFromShortWchar(&t_key, varPropVal->pwstrVal);
 		key = t_key;
-		//size_t lenkey = wcslen(key);
-
-		//long res = 1;
-		//for (unsigned int i = 0; i < lenkey - 1; i++)
-		//{
-		//	unsigned int a = (unsigned int)key[i];
-		//	res = res*a;
-		//}
-		//_ltow(res, key, 20);
 		return true;
 		break;
 		}
