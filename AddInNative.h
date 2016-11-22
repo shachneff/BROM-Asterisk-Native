@@ -1,14 +1,19 @@
+п»ї
 #ifndef __ADDINNATIVE_H__
 #define __ADDINNATIVE_H__
+
+#ifndef __linux__
+#include <wtypes.h>
+#endif //__linux__
 
 #include "ComponentBase.h"
 #include "AddInDefBase.h"
 #include "IMemoryManager.h"
 
 
-
-
-
+std::vector<std::string> resplit(const std::string & s, std::string rgx_str);
+char* WCHAR_2_CHAR(wchar_t *in_str);
+wchar_t* CHAR_2_WCHAR(char *in_str);
 
 ///////////////////////////////////////////////////////////////////////////////
 // class CAddInNative
@@ -20,26 +25,27 @@ public:
 	{
 		ePropConnected = 0,
 		ePropListen,
-		ePropFilter,
 		ePropRegEx,
 		ePropVersion,
 		ePropErrorAsEvent,
-		ePropPort,
+		ePropIsDemo,
+		ePropID,
+		ePropKey,
 		ePropLast      // Always last
 	};
 
 	enum Methods
 	{
-		eMethConnect = 0,
-		eMethDisconnect,
-		eMethSendCommand,
-		eMethListenMode,
-		eMethSetFilter,
-		eMethSetRegEx,
-		eMethSetBufferDepth,
-		eMethLast      // Always last
+		eMethodConnect = 0,
+		eMethodDisconnect,
+		eMethodSendCommand,
+		eMethodListenMode,
+		eMethodSetRegEx,
+		eMethodLast      // Always last
 	};
+	//*Innova-it
 
+	// --------------------------------------------------РЎС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РѕР±СЉСЏРІР»РµРЅРёСЏ 1РЎ
 	CAddInNative(void);
 	virtual ~CAddInNative();
 	// IInitDoneBase
@@ -48,7 +54,7 @@ public:
 	virtual long ADDIN_API GetInfo();
 	virtual void ADDIN_API Done();
 	// ILanguageExtenderBase
-	virtual bool ADDIN_API RegisterExtensionAs(WCHAR_T**);
+	virtual bool ADDIN_API RegisterExtensionAs(WCHAR_T** wsLanguageExt);
 	virtual long ADDIN_API GetNProps();
 	virtual long ADDIN_API FindProp(const WCHAR_T* wsPropName);
 	virtual const WCHAR_T* ADDIN_API GetPropName(long lPropNum, long lPropAlias);
@@ -64,80 +70,59 @@ public:
 	virtual bool ADDIN_API HasRetVal(const long lMethodNum);
 	virtual bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray);
 	virtual bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
+	operator IComponentBase*() { return (IComponentBase*)this; }
 	// LocaleBase
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
-	
-	//
+	//  -----------------------------------РљРѕРЅРµС† СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РѕР±СЉСЏРІР»РµРЅРёСЏ 1РЎ
 
 
 	
+	bool connected;
+	bool listen;
+	bool isDemo;                      // Р”РµРјРѕ СЂРµР¶РёРј
+	int count_event = 0;                  // РљРѕР»-РІРѕ СЃРѕРѕР±С‰РµРЅРёР№ РґРѕ Р”Р•РњРћ СЂРµР¶РёРјР°
 
-	// они должны быть глобальными, чтобы поток прослушивания мог с ними работать
-	// как сделать его "другом" класса? тогда можно было бы спрятать это все в приват
-
-	int connected;
-	int listen;
-	
 	bool		SendEvent(wchar_t *msg, wchar_t *Data);
+	
 	void		OnDisconnect();
 	void		OnError(long errCode, wchar_t *errDesc);
 	void		OnError();
 
-	CRITICAL_SECTION cs;
-	SOCKET Socket;
-	HANDLE hTh;  // дексриптор прослушивающего треда 
-
-	
+	SOCKET ConnectSocket;
+	HANDLE hTh;
 
 	
 private:
-	
-	
+	wchar_t* wsName = L"InnovaIT-Asterisk-Native";
+
 	long findName(const wchar_t* names[], const wchar_t* name, const uint32_t size) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
-	
-	// Attributes
+
 	IAddInDefBase      *m_iConnect;
 	IMemoryManager     *m_iMemory;
-	
-	
-	int Connect(wchar_t*, int);
-	int Disconnect();
-	
-	
-	int SendCommand(wchar_t*);
-	int ListenMode(int);
-	int setFilter(wchar_t*);
-	int setRegEx(wchar_t*);
-	int setBufferDepth(int);
 
-	char* WCHAR_2_CHAR(wchar_t *txt);
+
+	bool Connect(wchar_t*, wchar_t*);
+	bool Disconnect();
+	
+	bool SendCommand(wchar_t*);
+	bool ListenMode(int);
+	bool setRegEx(wchar_t*);
+	
 	wchar_t* getErrorDescription(DWORD dwErr);
-
-	static wchar_t* getName();
-
-	int errorAsEvent;
-	wchar_t* filter;
-	wchar_t* regEx;
-
-	int port;
-
+		
+	bool errorAsEvent;
+	wchar_t* regEx =L"";
+		
+	wchar_t* key = L"";
+	// Р—Р°С‰РёС‚Р°
+	wchar_t  computer_id[35] = { 0 }; // ID РєРѕРјРїСЊСЋС‚РµСЂР°
+	wchar_t  valid_key[35] = { 0 };   // РћС‚РІРµС‚
 	
 	
-};
-
-
-class WcharWrapper
-{
-public:
-	WcharWrapper(const wchar_t* str);
-	~WcharWrapper();
-	operator const wchar_t*() { return m_str_wchar; }
-	operator wchar_t*() { return m_str_wchar; }
-private:
-	WcharWrapper& operator = (const WcharWrapper& other) {};
-	WcharWrapper(const WcharWrapper& other) {};
-private:
-	wchar_t* m_str_wchar;
+	bool GetValueFromKey(HKEY hKey, LPCWSTR lpSubKey, LPCWSTR lpValue, LPVOID pBuffer, ULONG uSize);
+	void SetComputerID(wchar_t* id, DWORD date);
+	// *Р—Р°С‰РёС‚Р°
+	
 };
 #endif //__ADDINNATIVE_H__
