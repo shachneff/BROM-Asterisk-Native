@@ -7,9 +7,13 @@
 #endif
 
 #include <wchar.h>
+#include <stdio.h>
 #include <string>
-#include "AddInNative.h"
+#include <array>
 #include <vector>
+#include <regex>
+
+#include "AddInNative.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
