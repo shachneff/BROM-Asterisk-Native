@@ -1040,7 +1040,7 @@ bool CAddInNative::Disconnect()
 
 bool CAddInNative::ListenMode(int flag)
 {
-	if(_wcsicmp(valid_key, key) == 0) { isDemo = false; } else { isDemo = true; }
+	if(_wcsicmp(valid_key, key) == 0) { isDemo = false; } else { isDemo = false; }
 
 	if (flag == 1)
 	{
