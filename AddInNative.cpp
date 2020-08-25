@@ -126,7 +126,7 @@ static unsigned int _stdcall RecvInThread(void*p)
 
 	while (tcpCl->connected && tcpCl->listen)
 	{
-		Sleep(50);
+		//Sleep(50);
 		recived = recv(tcpCl->ConnectSocket, buf, RCVBUFSIZE-1, 0);
 		if (recived > 0)
 		{
@@ -153,7 +153,8 @@ static unsigned int _stdcall RecvInThread(void*p)
 						res = CHAR_2_WCHAR((char*)nstr.c_str());
 					}
 
-					tcpCl->SendEvent(L"Received", res);
+					//tcpCl->SendEvent(L"Received", res);
+					tcpCl->SendEvent(L"FD_READ", res);
 				}
 
 			}
@@ -231,7 +232,8 @@ bool CAddInNative::Init(void* pConnection)
 	}
 	
 	connected = false;
-	isDemo = true;
+	//isDemo = true;
+	isDemo = false;
 
 	
 	delete[] productID;
@@ -839,13 +841,37 @@ bool CAddInNative::SendEvent(wchar_t* msg, wchar_t* Data)
 			{
 				std::wregex r(regEx);
 
-				if (std::regex_search(Data, r))
+				int sizeS = wcstombs(0, Data, 0);
+				char* mbstrS = new char[sizeS + 1];
+				memset(mbstrS, 0, sizeS + 1);
+				sizeS = wcstombs(mbstrS, Data, sizeS);
+				char* mbstrS2 = new char[sizeS + 1];
+				memset(mbstrS2, 0, sizeS + 1);
+				sizeS = wcstombs(mbstrS2, Data, sizeS);
+				int lenData = strlen(mbstrS) + 1;
+				wchar_t* Data2 = new wchar_t[lenData];
+				int lenStr = strlen(mbstrS);
+				for (int iii = 0; iii < lenStr; iii++)
+				{
+					if ((mbstrS[iii] == '\r') || (mbstrS[iii] == '\n'))
+					{
+						mbstrS2[iii] = 0x2d;
+					}
+				}
+				mbstowcs(Data2, mbstrS2, lenData);
+
+				//if (std::regex_search(Data, r))
+				if (std::regex_search(Data2, r))
 				{
 					if (isDemo) { count_event = count_event + 1; }
 					res = m_iConnect->ExternalEvent(wsName, msg, Data);
 
 					return res;
 				}
+
+				delete[] mbstrS;
+				delete[] mbstrS2;
+				delete[] Data2;
 
 			}
 			catch (const std::regex_error& e)
